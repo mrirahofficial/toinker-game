@@ -129,4 +129,55 @@ $('spin').addEventListener('click',()=>{
  },4100);
 });
 setInterval(recover,1000);render();save();
+
+const SUPABASE_FUNCTION_URL =
+  "https://kambjzgvkeowxxprmacu.supabase.co/functions/v1/toinker-api";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_YK6x35z3iKTmvqOzgZREPw_q0NH8-P6";
+
+async function connectTelegramLogin() {
+  const status = document.createElement("p");
+  status.style.cssText = "text-align:center;color:#9df0bd;font-size:13px";
+  document.querySelector("header").appendChild(status);
+
+  if (!window.Telegram?.WebApp?.initData) {
+    status.textContent = "Open Toinker from Telegram to sign in.";
+    return;
+  }
+
+  status.textContent = "Verifying Telegram account...";
+
+  try {
+    const res = await fetch(SUPABASE_FUNCTION_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_PUBLISHABLE_KEY
+      },
+      body: JSON.stringify({
+        initData: window.Telegram.WebApp.initData
+      })
+    });
+
+    const result = await res.json();
+
+    if (!res.ok || !result.success) {
+      status.textContent = result.message || "Login failed";
+      console.error(result);
+      return;
+    }
+
+    status.textContent =
+      "✓ Telegram Verified: " +
+      (result.player.display_name || result.player.username || "Player");
+
+    window.toinkerPlayer = result.player;
+  } catch (error) {
+    status.textContent = "Connection error. Please try again.";
+    console.error(error);
+  }
+}
+
+connectTelegramLogin();
 </script></body></html>
